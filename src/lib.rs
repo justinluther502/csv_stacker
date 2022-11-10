@@ -1,8 +1,44 @@
 use polars::prelude::*;
 use std::{
+    error::Error,
     fs::{read_dir, File},
     io::{prelude::*, BufReader},
 };
+
+pub struct Config {
+    pub csv_dir_path: String,
+    pub colnames: Vec<String>,
+    pub outfile: String,
+}
+
+impl Config {
+    pub fn build(mut args: impl Iterator<Item = String>) -> Result<Config, &'static str> {
+        args.next();
+
+        let csv_dir_path = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a CSV directory path argument"),
+        };
+
+        let outfile = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get an output file path"),
+        };
+
+        let colnames = colnames("colnames.txt");
+        Ok(Config {
+            csv_dir_path,
+            colnames,
+            outfile,
+        })
+    }
+}
+
+pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let filenames = csv_filenames(&config.csv_dir_path);
+    stack_csvs(&filenames, &config.colnames, &config.outfile);
+    Ok(())
+}
 
 pub fn read_single_csv(filepath: &str) -> Result<DataFrame, PolarsError> {
     Ok(LazyCsvReader::new(filepath)
@@ -12,7 +48,7 @@ pub fn read_single_csv(filepath: &str) -> Result<DataFrame, PolarsError> {
         .unwrap())
 }
 
-pub fn get_colnames(filename: &str) -> Vec<String> {
+pub fn colnames(filename: &str) -> Vec<String> {
     let file = File::open(filename).expect("couldn't find colnames file.");
     let buf = BufReader::new(file);
     buf.lines()
@@ -20,7 +56,7 @@ pub fn get_colnames(filename: &str) -> Vec<String> {
         .collect()
 }
 
-pub fn get_csv_filenames(csv_dir_path: &str) -> Vec<String> {
+pub fn csv_filenames(csv_dir_path: &str) -> Vec<String> {
     read_dir(csv_dir_path)
         .expect("Couln't read CSV directory")
         .map(|f| f.unwrap().path().to_str().unwrap().to_owned())
