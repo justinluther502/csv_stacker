@@ -5,4 +5,3 @@ edition = "2021"
 
 [dependencies]
 polars = { version = "0.25.1", features = ["lazy"] }
-toml = "0.4.2"
