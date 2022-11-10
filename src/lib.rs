@@ -39,10 +39,12 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let filename = config.outfile;
     let mut file = std::fs::File::create(&filename).unwrap();
-    CsvWriter::new(&mut file).finish(&mut df).unwrap_or_else(|err| {
-        eprintln!("Failed to write to file: {filename}, with error: {err}.");
-        process::exit(1);
-    });
+    CsvWriter::new(&mut file)
+        .finish(&mut df)
+        .unwrap_or_else(|err| {
+            eprintln!("Failed to write to file: {filename}, with error: {err}.");
+            process::exit(1);
+        });
     println!("Saved combined CSV file as {filename}");
     Ok(())
 }
