@@ -1,0 +1,3 @@
+Underlying,Security Type,Last Trading Day,Strike,Put/Call,Currency,Action,Quantity,Price,Time,Date,Exch.,Account,Order Ref.,Clearing,More Info,Trading Class
+VEU,STK,,,,USD,BOT,45,63.055,12:42:18,20210816,DARK,12345,,,,
+VCLT,STK,,,,USD,BOT,12,108.42,12:42:42,20210816,DRCTEDGE,12345,,,,

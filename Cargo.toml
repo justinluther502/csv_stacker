@@ -3,6 +3,6 @@ name = "csv_stacker"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+polars = { version = "0.25.1", features = ["lazy"] }
+toml = "0.4.2"

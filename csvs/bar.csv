@@ -1,0 +1,3 @@
+Underlying,Security Type,Last Trading Day,Strike,Put/Call,Currency,Action,Quantity,Price,Time,Date,Exch.,Account,Order Ref.,Clearing,More Info,Trading Class
+AAPL,STK,,,,USD,BOT,12,34,10:42:18,20210816,DARK,33333,,,,
+GOOG,STK,,,,USD,BOT,13,67,12:22:42,20210816,DRCTEDGE,33333,,,,
