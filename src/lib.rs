@@ -1,3 +1,11 @@
+//! Quick utility to vertically stack a bunch of CSV files with partially
+//! matching column headers.
+//!
+//! Can be configured by editing colnames.txt to specify which common column
+//! headers to select from, as well as passing two mandatory arguments:
+//! 1. Path of directory with individual CSVs. Ex: csvs
+//! 2. Output filename. Ex: combined_csv.csv
+
 use polars::prelude::*;
 use std::{
     error::Error,
@@ -6,13 +14,22 @@ use std::{
     process,
 };
 
+/// Config struct representing a few config variables for the app.
 pub struct Config {
+    /// The directory holding CSVs to be stacked.
     pub csv_dir_path: String,
+    /// Columns to select for the stacked CSV output.
     pub colnames: Vec<String>,
+    /// The output csv filename.
     pub outfile: String,
 }
 
 impl Config {
+    /// Returns the Config struct.
+    ///
+    /// # Arguments
+    ///
+    /// * `args` - An iterator from std::env::args with the binary arguments as Items.
     pub fn build(mut args: impl Iterator<Item = String>) -> Result<Config, &'static str> {
         args.next();
         let csv_dir_path = match args.next() {
@@ -32,6 +49,10 @@ impl Config {
     }
 }
 
+/// Main function for the crate binary.
+///
+/// Takes the Config struct, stacks the CSVs, and writes out to the output file
+/// defined in the Config struct.
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let filenames = csv_filenames(&config.csv_dir_path);
     let mut df = stack_csvs(&filenames, &config.colnames).unwrap();
@@ -49,6 +70,8 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+/// Reads a plain text file with lines containing the column names desired to
+/// be selected for the final stacked CSV.
 pub fn colnames(filename: &str) -> Vec<String> {
     let file = File::open(filename).expect("couldn't find colnames file.");
     let buf = BufReader::new(file);
@@ -57,6 +80,8 @@ pub fn colnames(filename: &str) -> Vec<String> {
         .collect()
 }
 
+/// Lists all CSV files in the csv_dir_path argument directory and returns the
+/// list as a Vec.
 pub fn csv_filenames(csv_dir_path: &str) -> Vec<String> {
     read_dir(csv_dir_path)
         .expect("Couln't read CSV directory")
@@ -64,6 +89,7 @@ pub fn csv_filenames(csv_dir_path: &str) -> Vec<String> {
         .collect()
 }
 
+/// Reads one CSV file into a Polars LazyFrame.
 pub fn read_single_csv(filepath: &str) -> Result<LazyFrame, PolarsError> {
     Ok(LazyCsvReader::new(filepath)
         .has_header(true)
@@ -71,6 +97,8 @@ pub fn read_single_csv(filepath: &str) -> Result<LazyFrame, PolarsError> {
         .unwrap())
 }
 
+/// Takes a Vec of individual CSV filenames and returns a stacked dataframe,
+/// with columns selected from the colnames argument.
 pub fn stack_csvs(csvs: &Vec<String>, colnames: &Vec<String>) -> Result<DataFrame, PolarsError> {
     let mut dfs: Vec<LazyFrame> = Vec::new();
     for csv in csvs {
