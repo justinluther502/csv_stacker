@@ -55,7 +55,8 @@ impl Config {
 /// defined in the Config struct.
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let filenames = csv_filenames(&config.csv_dir_path);
-    let mut df = stack_csvs(&filenames, &config.colnames).unwrap();
+    let dfs = build_df_vec(filenames);
+    let mut df = stack_dfs(dfs, &config.colnames).unwrap();
     println!("{df}");
 
     let filename = config.outfile;
@@ -68,6 +69,19 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         });
     println!("Saved combined CSV file as {filename}");
     Ok(())
+}
+
+/// Takes a Vec of csv filename strings and returns a Vec of LazyFrames.
+pub fn build_df_vec(csv_filenames: Vec<String>) -> Vec<LazyFrame> {
+    let mut dfs: Vec<LazyFrame> = Vec::new();
+    for csv in csv_filenames {
+        let df = read_single_csv(&csv).unwrap_or_else(|err| {
+            eprintln!("Problem reading from csv file: {err}");
+            process::exit(1);
+        });
+        dfs.push(df)
+    }
+    dfs
 }
 
 /// Reads a plain text file with lines containing the column names desired to
@@ -97,28 +111,41 @@ pub fn read_single_csv(filepath: &str) -> Result<LazyFrame, PolarsError> {
         .unwrap())
 }
 
-/// Takes a Vec of individual CSV filenames and returns a stacked dataframe,
+/// Takes a Vec of individual dataframes and returns a stacked dataframe,
 /// with columns selected from the colnames argument.
-pub fn stack_csvs(csvs: &Vec<String>, colnames: &Vec<String>) -> Result<DataFrame, PolarsError> {
-    let mut dfs: Vec<LazyFrame> = Vec::new();
-    for csv in csvs {
-        let df = read_single_csv(csv).unwrap_or_else(|err| {
-            eprintln!("Problem reading from csv file: {err}");
-            process::exit(1);
-        });
-        dfs.push(df)
-    }
+pub fn stack_dfs(dfs: Vec<LazyFrame>, colnames: &Vec<String>) -> Result<DataFrame, PolarsError> {
     let big_df = concat(dfs, false, true);
     big_df.unwrap().collect().unwrap().select(colnames)
 }
 
 #[cfg(test)]
 mod tests {
-    //    use super::*;
+    use super::*;
 
-    //    #[test]
-    //    fn it_works() {
-    //        let result = add(2, 2);
-    //        assert_eq!(result, 4);
-    //    }
+    #[test]
+    fn stack_two_dfs() {
+        let df1 = df! {
+            "column_a" => &[1, 2, 3],
+            "column_b" => &["a", "b", "c"]
+        }
+        .unwrap()
+        .lazy();
+
+        let df2 = df! {
+            "column_a" => &[4, 5],
+            "column_b" => &["d", "e"]
+        }
+        .unwrap()
+        .lazy();
+
+        let df3 = df! {
+            "column_a" => &[1, 2, 3, 4, 5],
+            "column_b" => &["a", "b", "c", "d", "e"]
+        }
+        .unwrap();
+        let dfs = vec![df1, df2];
+        let colnames = vec![String::from("column_a"), String::from("column_b")];
+        let stacked = stack_dfs(dfs, &colnames).unwrap();
+        assert_eq!(stacked, df3);
+    }
 }
