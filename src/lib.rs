@@ -43,18 +43,24 @@ impl Config {
     }
 }
 
-/// Main function for the crate binary.
+/// Main function to run the crate binary.
 ///
 /// Takes the Config struct, stacks the CSVs, and writes out to the output file
 /// defined in the Config struct.
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let filenames = csv_filenames(&config.csv_dir_path);
     let dfs = build_df_vec(filenames);
-    let mut df = stack_dfs(dfs, &config.colnames).unwrap();
+    let mut df = stack_dfs(dfs, &config.colnames).unwrap_or_else(|err| {
+        eprintln!("Couldn't stack the dataframes: {err}");
+        process::exit(1);
+    });
     println!("{df}");
 
     let filename = config.outfile;
-    let mut file = std::fs::File::create(&filename).unwrap();
+    let mut file = std::fs::File::create(&filename).unwrap_or_else(|err| {
+        eprintln!("Couldn't create the output file: {err}");
+        process::exit(1);
+    });
     CsvWriter::new(&mut file)
         .finish(&mut df)
         .unwrap_or_else(|err| {
