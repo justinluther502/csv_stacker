@@ -16,9 +16,11 @@ I use this to aggregate individual stock trading transaction logs into a single 
 Say you have two CSV files, "foo.csv" and "bar.csv" in a relative dirctory named "csvs".
 
 foo.csv
+
 ![a csv file with two rows](images/foo.png)
 
 bar.csv
+
 ![a different csv file with two rows](images/bar.png)
 
 You can use the following configuration toml file to stack these csvs into "stacked.csv".
@@ -37,4 +39,5 @@ Config.toml
 Running the binary will result in the following combined csv file "stacked.csv".
 
 stacked.csv
+
 ![a csv file with four rows](images/stacked.png)
