@@ -12,6 +12,7 @@ use std::{
     fs::{read_dir, read_to_string, File},
     io::{prelude::*, BufReader},
     process,
+    path::Path,
 };
 use serde_derive::Deserialize;
 use toml;
@@ -91,7 +92,8 @@ pub fn colnames(filename: &str) -> Vec<String> {
 /// Lists all CSV files in the csv_dir_path argument directory and returns the
 /// list as a Vec.
 pub fn csv_filenames(csv_dir_path: &str) -> Vec<String> {
-    read_dir(csv_dir_path)
+    let path = Path::new(csv_dir_path);
+    read_dir(path)
         .expect("Couln't read CSV directory")
         .map(|f| f.unwrap().path().to_str().unwrap().to_owned())
         .collect()
