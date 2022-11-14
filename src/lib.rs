@@ -115,8 +115,12 @@ pub fn read_single_csv(filepath: &str) -> Result<LazyFrame, PolarsError> {
 /// Takes a Vec of individual dataframes and returns a stacked dataframe,
 /// with columns selected from the colnames argument.
 pub fn stack_dfs(dfs: Vec<LazyFrame>, colnames: &Vec<String>) -> Result<DataFrame, PolarsError> {
-    let big_df = concat(dfs, false, true);
-    big_df.unwrap().collect().unwrap().select(colnames)
+    let mut trimmed_dfs: Vec<LazyFrame> = Vec::new();
+    for df in dfs {
+        let trimmed_df = df.collect().unwrap().select(colnames).unwrap().lazy();
+        trimmed_dfs.push(trimmed_df);
+    }
+    concat(trimmed_dfs, false, true).unwrap().collect()
 }
 
 #[cfg(test)]
