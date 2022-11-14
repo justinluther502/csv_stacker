@@ -7,8 +7,8 @@ fn main() {
         process::exit(1);
     });
 
-    if let Err(e) = run(config) {
-        eprintln!("Application error: {e}");
+    run(config).unwrap_or_else(|err| {
+        eprintln!("Application error: {err}");
         process::exit(1);
-    }
+    });
 }
