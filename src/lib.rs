@@ -1,10 +1,10 @@
 //! Quick utility to vertically stack a bunch of CSV files with partially
 //! matching column headers.
 //!
-//! Can be configured by editing colnames.txt to specify which common column
-//! headers to select from, as well as passing two mandatory arguments:
-//! 1. Path of directory with individual CSVs. Ex: csvs
-//! 2. Output filename. Ex: combined_csv.csv
+//! Can be configured using Config.toml to define 3 parameters:
+//! 1. csv_dir_path: the path to the directory where the csvs you want to stack are held.
+//! 2. outfile: the filename to write the stacked csv out to.
+//! 3. colnames: a list of column headers you want to select for in the stacked csv file.
 
 use polars::prelude::*;
 use serde_derive::Deserialize;
