@@ -7,15 +7,14 @@
 //! 2. Output filename. Ex: combined_csv.csv
 
 use polars::prelude::*;
+use serde_derive::Deserialize;
 use std::{
     error::Error,
     fs::{read_dir, read_to_string, File},
     io::{prelude::*, BufReader},
-    process,
     path::Path,
+    process,
 };
-use serde_derive::Deserialize;
-use toml;
 
 /// Config struct representing a few config variables for the app.
 #[derive(Deserialize)]
