@@ -9,12 +9,15 @@
 use polars::prelude::*;
 use std::{
     error::Error,
-    fs::{read_dir, File},
+    fs::{read_dir, read_to_string, File},
     io::{prelude::*, BufReader},
     process,
 };
+use serde_derive::Deserialize;
+use toml;
 
 /// Config struct representing a few config variables for the app.
+#[derive(Deserialize)]
 pub struct Config {
     /// The directory holding CSVs to be stacked.
     pub csv_dir_path: String,
@@ -30,22 +33,13 @@ impl Config {
     /// # Arguments
     ///
     /// * `args` - An iterator from std::env::args with the binary arguments as Items.
-    pub fn build(mut args: impl Iterator<Item = String>) -> Result<Config, &'static str> {
-        args.next();
-        let csv_dir_path = match args.next() {
-            Some(arg) => arg,
-            None => return Err("Didn't get a CSV directory path argument"),
-        };
-        let outfile = match args.next() {
-            Some(arg) => arg,
-            None => return Err("Didn't get an output file path"),
-        };
-        let colnames = colnames("colnames.txt");
-        Ok(Config {
-            csv_dir_path,
-            colnames,
-            outfile,
-        })
+    pub fn build() -> Result<Config, &'static str> {
+        let contents = read_to_string("Config.toml").expect("Couldn't read Config.toml");
+        let config: Config = toml::from_str(&contents).unwrap_or_else(|err| {
+            eprintln!("Couldn't parse Config.toml: {err}");
+            process::exit(1);
+        });
+        Ok(config)
     }
 }
 
