@@ -1,12 +1,7 @@
 csv_dir_path = "csvs"
 outfile = "stacked.csv"
 colnames = [
-"Underlying",
-"Security Type",
-"Action",
-"Quantity",
-"Price",
-"Time",
-"Date",
-"Account"
+    "Player",
+    "Position",
+    "Number",
 ]
